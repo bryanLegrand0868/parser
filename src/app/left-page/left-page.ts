@@ -22,7 +22,6 @@ export class LeftPage {
 
   leftCompilar(){
     try{
-      // ✅ PARSEAR EL TEXTO
       let nodo: any = this.LeftPerser.parse(this.texto);
 
       console.log("Nodo completo:", nodo);

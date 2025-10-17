@@ -6,7 +6,7 @@ import * as peggy from 'peggy';
 })
 export class LeftPerser {
 
-  private parser!: peggy.Parser; // ← AGREGAR ESTO
+  private parser!: peggy.Parser;
 
   constructor() {
     this.compileGrammar();
@@ -30,7 +30,7 @@ L = tipo:TIPO ids:ID_LIST pcoma:PCOMA {
   // Array invertido: [c, b, a] para int a, b, c
   let idsInvertidos = ids.reverse();
 
-  // Caso base: T id (último id, el "a")
+  // Caso base: T id
   let primerID = idsInvertidos[0];
   let nodoBase = {};
   let numBase = "L" + nextId();
@@ -46,7 +46,7 @@ L = tipo:TIPO ids:ID_LIST pcoma:PCOMA {
   nodoBase.numero = numBase;
   let nodoActual = nodoBase;
 
-  // Construir L -> L , id (de derecha a izquierda: b, c)
+  // Construir L -> L , id
   for (let i = 1; i < idsInvertidos.length; i++) {
     let nodoL = {};
     let numL = "L" + nextId();
@@ -76,7 +76,6 @@ TIPO = tipo:("int" / "char" / "String") " " {
   return nodo;
 }
 
-// Captura: a, b, c (sin el punto y coma)
 ID_LIST = primer:ID resto:("," " " id:ID { return id; })* {
   return [primer, ...resto];
 }
@@ -105,12 +104,8 @@ PCOMA = ";" {
    return nodo;
 }
 `;
-
-    // ✅ GENERAR EL PARSER
     this.parser = peggy.generate(grammar);
   }
-
-  // ✅ MÉTODO PARSE
   parse(expression: string): any {
     return this.parser.parse(expression);
   }
