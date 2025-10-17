@@ -5,11 +5,13 @@ import { AppRoutingModule } from './app-routing-module';
 import { App } from './app';
 import { Pagina } from './pagina/pagina';
 import { FormsModule } from '@angular/forms';
+import { LeftPage } from './left-page/left-page';
 
 @NgModule({
   declarations: [
     App,
-    Pagina
+    Pagina,
+    LeftPage
   ],
   imports: [
     BrowserModule,

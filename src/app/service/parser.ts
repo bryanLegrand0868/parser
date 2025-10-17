@@ -17,78 +17,101 @@ export class ParserServicio {
   const grammar = `
 {
   let counter = 0;
-  function nextId() { return ++counter; }
+  function nextId() {
+    return counter++;
+  }
 }
 
-start
-  = decl:declaration { return decl; }
+start = _ lista:L _ {
+  return lista;
+}
 
-declaration
-  = ids:identList _ ":" _ t:type _ ";" {
-      let nodo = {};
-      nodo.numero = "nodo" + nextId();
+L = id1:ID _ coma:COMA _ resto:L {
+  let nodo = {};
+  let listaActual = "L" + nextId();
 
-      // crear nodos para ":" y ";"
-      let dosp = "nodo" + nextId();
-      let pcoma = "nodo" + nextId();
+  nodo.codigo = id1.codigo
+              + coma.codigo
+              + resto.codigo
+              + listaActual + " [label=\\"L\\"];\\n"
+              + listaActual + " -> " + id1.numero + ";\\n"
+              + listaActual + " -> " + resto.numero + ";\\n"
+              + id1.numero + " -> " + coma.numero + ";\\n";
 
-      nodo.codigo = ids.codigo + t.codigo
-        + dosp + "[label = \\":\\"];"
-        + pcoma + "[label = \\";\\"];"
-        + nodo.numero + "[label = \\"S\\"];"
-        + nodo.numero + "->" + ids.numero + ";"
-        + nodo.numero + "->" + dosp + ";"
-        + nodo.numero + "->" + t.numero + ";"
-        + nodo.numero + "->" + pcoma + ";";
+  nodo.numero = listaActual;
+  return nodo;
+}
+/ id1:ID _ dospuntos:DOSPUNTOS _ tipo:TIPO {
+  let nodo = {};
+  let listaActual = "L" + nextId();
 
-      return nodo;
-    }
+  nodo.codigo = id1.codigo
+              + dospuntos.codigo
+              + tipo.codigo
+              + listaActual + " [label=\\"L\\"];\\n"
+              + listaActual + " -> " + id1.numero + ";\\n"
+              + listaActual + " -> " + tipo.numero + ";\\n"
+              + id1.numero + " -> " + dospuntos.numero + ";\\n";
 
-identList
-  = head:identifier tail:(_ "," _ identifier)* {
-      let nodo = {};
-      nodo.numero = "nodo" + nextId();
-      let idsCodigo = head.codigo;
-      let idsNumeros = [head.numero];
-      tail.forEach(x => {
-        idsCodigo += x[3].codigo;
-        idsNumeros.push(x[3].numero);
-      });
-      nodo.codigo = idsCodigo + nodo.numero + "[label = \\"L\\"];"
-        + idsNumeros.map(n => nodo.numero + "->" + n + ";").join("");
-      return { numero: nodo.numero, codigo: nodo.codigo };
-    }
-  / id:identifier {
-      let nodo = {};
-      nodo.numero = "nodo" + nextId();
-      nodo.codigo = id.codigo + nodo.numero + "[label = \\"L\\"];"
-        + nodo.numero + "->" + id.numero + ";";
-      return { numero: nodo.numero, codigo: nodo.codigo };
-    }
+  nodo.numero = listaActual;
+  return nodo;
+}
 
-identifier
-  = id:[a-zA-Z_][a-zA-Z0-9_]* {
-      let nodo = {};
-      nodo.numero = "nodo" + nextId();
-      let hijo = "nodo" + nextId();
-      nodo.codigo = nodo.numero + "[label = \\"I\\"];"
-                  + hijo + "[label = \\"" + text() + "\\"];"
-                  + nodo.numero + "->" + hijo + ";";
-      return { numero: nodo.numero, codigo: nodo.codigo };
-    }
+ID = id:[a-zA-Z-Z0-9_]+ {
+  let nodo = {};
+  let idNodo = "id" + nextId();
 
-type
-  = t:("int" / "String" / "char") {
-      let nodo = {};
-      nodo.numero = "nodo" + nextId();
-      let hijo = "nodo" + nextId();
-      nodo.codigo = nodo.numero + "[label = \\"T\\"];"
-                  + hijo + "[label = \\"" + t + "\\"];"
-                  + nodo.numero + "->" + hijo + ";";
-      return { numero: nodo.numero, codigo: nodo.codigo };
-    }
+  nodo.codigo = idNodo + " [label=\\"id\\"];\\n"
+              + idNodo + " -> \\"" + text() + "\\";\\n";
 
-_ = [ \\t\\n\\r]* // espacios opcionales
+  nodo.numero = idNodo;
+  return nodo;
+}
+
+COMA = "," {
+  let nodo = {};
+  let comaNodo = "comma" + nextId();
+
+  nodo.codigo = comaNodo + " [label=\\",\\"];\\n";
+
+  nodo.numero = comaNodo;
+  return nodo;
+}
+
+DOSPUNTOS = ":" {
+   let nodo = {};
+   let dospuntosNodo = "colon" + nextId();
+
+   nodo.codigo = dospuntosNodo + " [label=\\":\\"];\\n";
+
+   nodo.numero = dospuntosNodo;
+   return nodo;
+}
+
+PCOMA = ";" {
+   let nodo = {};
+   let pcomaNodo = "semicolon" + nextId();
+
+   nodo.codigo = pcomaNodo + " [label=\\";\\"];\\n";
+
+   nodo.numero = pcomaNodo;
+   return nodo;
+}
+
+TIPO = tipo:("int" / "char" / "String") _ pcoma:PCOMA {
+  let nodo = {};
+  let tipoNodo = "T" + nextId();
+
+  nodo.codigo = tipoNodo + " [label=\\"T\\"];\\n"
+              + tipoNodo + " -> \\"" + tipo + "\\";\\n"
+              + pcoma.codigo
+              + tipoNodo + " -> " + pcoma.numero + ";\\n";
+
+  nodo.numero = tipoNodo;
+  return nodo;
+}
+
+_ = [ \\t\\n\\r]*
 `;
 
   this.parser = peggy.generate(grammar);
