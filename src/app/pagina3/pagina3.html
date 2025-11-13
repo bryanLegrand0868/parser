@@ -1,0 +1,40 @@
+<div>
+<textarea
+    [(ngModel)]="expression"
+    placeholder="Ej: let x = 5 + 3;
+let y = x * 2;
+let z = y - 4;"
+    rows="5"
+    cols="40">
+</textarea>
+<button (click)="calcular()">Parsear Todo</button>
+  <button (click)="limpiarVariables()" style="margin-left: 10px;">Limpiar Variables</button>
+</div>
+
+<!-- ← TABLA DE VARIABLES -->
+<div style="margin-top: 20px;">
+  <h3>Tabla de Variables:</h3>
+  <table border="1" style="border-collapse: collapse;">
+    <thead>
+      <tr>
+        <th style="padding: 8px;">Variable</th>
+        <th style="padding: 8px;">Valor</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let variable of variables">
+        <td style="padding: 8px;">{{ variable.name }}</td>
+        <td style="padding: 8px;">{{ variable.value }}</td>
+      </tr>
+      <tr *ngIf="variables.length === 0">
+        <td colspan="2" style="padding: 8px; text-align: center;">No hay variables declaradas</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="margin-top: 20px;">
+  <p><strong>Último resultado:</strong> {{ resultado.valor || 'N/A' }}</p>
+</div>
+
+<div #graphContainer style="margin-top: 20px;"></div>

@@ -15,94 +15,94 @@ export class LeftPerser {
   private compileGrammar() {
     const grammar = `
 {
-  let counter = 0;
-  function nextId() {
-    return counter++;
+      let counter = 0;
+
+      function nextId() {
+        return ++counter;
+      }
+    }
+
+
+    L = t:T " " i:ID ";"{
+      let nodo = {};
+      nodo.numero = "nodo" + nextId();
+      nodo.codigo = i.codigo + t.codigo + nodo.numero + "[label = L];\\n"
+                  + nodo.numero + "->" + t.numero + ";\\n"
+                  + nodo.numero + "->" + i.numero + ";\\n";
+      return nodo;
+    }
+
+    ID = i:ID2 ", " l:ID{
+      let nodo = {};
+      nodo.numero = "nodo" + nextId();
+      nodo.codigo = l.codigo + i.codigo + nodo.numero + "[label = L];\\n"
+                + nodo.numero + "->" + i.numero + ";\\n"
+                + nodo.numero + "->" + l.numero + ";\\n";
+      return nodo;
+    }
+
+      / i:ID3{
+      let nodo = {};
+      nodo.numero = "nodo" + nextId();
+      nodo.codigo = i.codigo + nodo.numero + "[label = L];\\n"
+                + nodo.numero + "->" + i.numero + ";\\n";
+      return nodo;
+    }
+
+      ID2 = [a-zA-Z-Z0-9_]*  {
+      let nodo = {};
+      nodo.numero = "nodo" + nextId();
+      let identificador = "nodo" + nextId();
+      let coma = "nodo" + nextId();
+      nodo.codigo = nodo.numero + "[label = id];\\n"
+                   + identificador + '[label = "' + text() + '"];\\n'
+                   + nodo.numero + "->" + identificador + ";\\n"
+                   + coma + "[label = \\",\\"];\\n"
+                   + nodo.numero + "->" + coma + ";\\n";
+      return nodo;
+    }
+
+    ID3 = [a-zA-Z-Z0-9_]* {
+      let nodo = {};
+      nodo.numero = "nodo" + nextId();
+      let identificador = "nodo" + nextId();
+      let pcoma = "nodo" + nextId();
+      nodo.codigo = nodo.numero + "[label = id];\\n"
+                   + identificador + '[label = "' + text() + '"];\\n'
+                   + nodo.numero + "->" + identificador + ";\\n"
+                   + pcoma + "[label = \\";\\"];\\n"
+                   + nodo.numero + "->" + pcoma + ";\\n";
+      return nodo;
+    }
+
+    T = "int"{
+    let nodo = {};
+    nodo.numero = "nodo" + nextId();
+      let identificador = "nodo" + nextId();
+      nodo.codigo = nodo.numero + "[label = T];\\n"
+                   + identificador + '[label = "' + text() + '"];\\n'
+                   + nodo.numero + "->" + identificador + ";\\n"
+      return nodo;
+    }
+
+    / "char"{
+    let nodo = {};
+    nodo.numero = "nodo" + nextId();
+      let identificador = "nodo" + nextId();
+      nodo.codigo = nodo.numero + "[label = T];\\n"
+                   + identificador + '[label = "' + text() + '"];\\n'
+                   + nodo.numero + "->" + identificador + ";\\n"
+      return nodo;
   }
-}
-
-start = lista:L {
-  return lista;
-}
-
-// L -> L , id | T id
-L = tipo:TIPO ids:ID_LIST pcoma:PCOMA {
-  // Array invertido: [c, b, a] para int a, b, c
-  let idsInvertidos = ids.reverse();
-
-  // Caso base: T id
-  let primerID = idsInvertidos[0];
-  let nodoBase = {};
-  let numBase = "L" + nextId();
-
-  nodoBase.codigo = tipo.codigo
-                  + primerID.codigo
-                  + pcoma.codigo
-                  + numBase + " [label=\\"L\\"];\\n"
-                  + numBase + " -> " + tipo.numero + ";\\n"
-                  + numBase + " -> " + primerID.numero + ";\\n"
-                  + tipo.numero + " -> " + pcoma.numero + ";\\n";
-
-  nodoBase.numero = numBase;
-  let nodoActual = nodoBase;
-
-  // Construir L -> L , id
-  for (let i = 1; i < idsInvertidos.length; i++) {
-    let nodoL = {};
-    let numL = "L" + nextId();
-    let idActual = idsInvertidos[i];
-
-    nodoL.codigo = nodoActual.codigo
-                 + idActual.codigo
-                 + numL + " [label=\\"L\\"];\\n"
-                 + numL + " -> " + nodoActual.numero + ";\\n"
-                 + numL + " -> " + idActual.numero + ";\\n";
-
-    nodoL.numero = numL;
-    nodoActual = nodoL;
+      / "String"{
+    let nodo = {};
+    nodo.numero = "nodo" + nextId();
+      let identificador = "nodo" + nextId();
+      nodo.codigo = nodo.numero + "[label = T];\\n"
+                   + identificador + '[label = "' + text() + '"];\\n'
+                   + nodo.numero + "->" + identificador + ";\\n"
+      return nodo;
   }
-
-  return nodoActual;
-}
-
-TIPO = tipo:("int" / "char" / "String") " " {
-  let nodo = {};
-  let tipoNodo = "T" + nextId();
-
-  nodo.codigo = tipoNodo + " [label=\\"T\\"];\\n"
-              + tipoNodo + " -> \\"" + tipo + "\\";\\n";
-
-  nodo.numero = tipoNodo;
-  return nodo;
-}
-
-ID_LIST = primer:ID resto:("," " " id:ID { return id; })* {
-  return [primer, ...resto];
-}
-
-ID = id:[a-zA-Z][a-zA-Z0-9_]* {
-  let nodo = {};
-  let idNodo = "id" + nextId();
-  let valor = text();
-  let comaNodo = "comma" + nextId();
-
-  nodo.codigo = idNodo + " [label=\\"id\\"];\\n"
-              + idNodo + " -> \\"" + valor + "\\";\\n"
-              + comaNodo + " [label=\\",\\"];\\n"
-              + idNodo + " -> " + comaNodo + ";\\n";
-
-  nodo.numero = idNodo;
-  return nodo;
-}
-
-PCOMA = ";" {
-   let nodo = {};
-   let pcomaNodo = "semicolon" + nextId();
-
-   nodo.codigo = pcomaNodo + " [label=\\";\\"];\\n";
-   nodo.numero = pcomaNodo;
-   return nodo;
-}
 `;
     this.parser = peggy.generate(grammar);
   }
